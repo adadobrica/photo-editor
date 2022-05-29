@@ -1,0 +1,118 @@
+Copyright 2022 Dobrica Nicoleta Adriana 311CA
+dobricanicole@gmail.com
+
+This project is an image editor made specifically for PPM and PGM images;
+PPM is an RGB image, and PGM is a grayscale image. This editor allows you to
+crop the image, rotate it, or apply four different filters: edge, sharpen, blur
+or gaussian blur.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LOAD COMMAND:
+
+-> To simplify things, I created a structure that contains everything from the
+picture: a matrix for the grayscale image, three different matrices for the RGB
+one (each matrix representing the color scale), height, width, maxvalue, the
+image's magic number and 4 coordinates for selection (x1, y1, x2, y2).
+
+-> Firstly, I open a text file from which I read the image's magic number to
+see if it's grayscale or RGB, then I proceed reading the width, height and
+maxvalue. If the image I load into memory is of ascii type, then I read the
+corresponding matrix. If it's binary, I close the text file, open the binary
+file and read it.
+
+-> To avoid the decimal precision problem, after reading the elements from the
+matrices I multiply them by 1000 instead of using double, because there are
+certain advantages to using int, so I reserved the last 3 digits of the number
+for the decimals.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SELECT COMMAND:
+
+-> If the input contains the string "SELECT ALL", then that means we will work
+with the entire photo, and the entire image will be selected. Otherwise, if we
+will work with only a certain part of the image, I'll have to check if the given
+coordinates are valid: if they are negative, they are bigger than the image,
+or contain letters, then they are invalid.
+
+-> If the x1 coordinate is bigger than x2, or if y1 is bigger than y2, then
+they will be swapped.
+
+-> At first, the coordinates I read from the input are strings, but I convert
+them to integer data type to make things easier.
+
+-> The selected area of the image will be the only part that's going to be used
+in the next commands (crop, rotate, apply), until another selection is going to
+be made.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ROTATE COMMAND:
+
+-> There are two different cases for this rotate command: if the image is
+fully selected, or just a part of it:
+
+-> For the first case, I created a function to rotate to 90 degrees clockwise,
+rotating it twice or three times if the angle is bigger, and if the angle is
+negative I calculated its complementary angle to avoid creating another
+function.
+
+-> For the second case, things are pretty similar, as I also created a 
+function to rotate it 90 degrees clockwise, but I had to check first if the
+selection I previously made is square: if it is, then I proceed with the
+rotation, otherwise the selection is not valid and furthermore the image will
+not be rotated.
+
+-> The only angles allowed are: 90, 180, 270, 360 and their negative
+counterparts.
+
+-> Both rotate functions are kind of similar: creating a copy of the photo,
+and rotating it with a formula, then freeing it from memory.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+APPLY COMMAND:
+
+-> There are four different filters that can be used on the image: edge, blur
+sharpen or gaussian blur.
+
+-> All of these filters have a kernel that is used for multiplying the pixels:
+the new pixel is created from the sum of the pixel and its neighbours that are
+multiplied with each corresponding element from the kernel. Now, after this is
+being done, the new pixel may have a value that is either negative or bigger
+than 255, and so the function clamp is being used.
+
+-> I also check for invalid filter names or if the image is grayscale, because
+the filters can only be used on RGB images in this case.
+
+-> As I explained earlier in the load command, since I'm working with all of
+the pixels multiplied by 1000, I also multiplied my kernel filters to 10000
+and after applying the filters I used my clamp function divided by 10000,
+which returns a precise double value.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SAVE COMMAND:
+
+-> This generally has the same structure as the load command, but I also check
+if the name for the file that is about to be saved has 'ascii' in it so I can
+save it in a text file.
+
+-> Firstly, I open a text file and print the magic number, the width and height
+of the image and also its maxvalue. If the image is about to be saved as an
+ascii file, then I also print its contents in that text file. Otherwise, I
+close the text file, open it in binary and print the binary matrix.
+
+-> For decimal precision, before printing the pixels I cast them to unsigned
+char, and when rounding them I multiply with 1.0 for double and then divide the
+pixels by 1000 to get the actual precise value of the pixel element.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+EXIT COMMAND:
+
+-> After the program is done being used, the EXIT command signals its end and
+the image loaded into the editor will be freed from memory.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
